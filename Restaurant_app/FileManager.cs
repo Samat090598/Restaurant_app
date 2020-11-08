@@ -1,15 +1,18 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Text;
 using Insight.Database;
+using Word = Microsoft.Office.Interop.Word;
 
 namespace Restaurant_app
 {
     public class FileManager
     {
         private readonly SqlConnection _connection;
-        private const string _path = "index.html";
+        private const string _html = "Index.html";
+        private const string _pdf = "Index.PDF";
 
         public FileManager(SqlConnection connection)
         {
@@ -24,12 +27,13 @@ namespace Restaurant_app
                 new DataColumn("FreeSize",typeof(string)) });
             try
             { 
-                //open connection
+                //открываем соединение
                 _connection.Open();
                 foreach (var table in _connection.Query<Table>("GetTables"))
                 {
                     dt.Rows.Add(table.Id, table.Size, table.FreeSize);
                 }
+                //закрываем соединение
                 _connection.Close();
 
                 StringBuilder sb = new StringBuilder();
@@ -55,11 +59,41 @@ namespace Restaurant_app
                 }
                 
                 sb.Append("</table>");
-                System.IO.File.WriteAllText(_path, sb.ToString());
+                using (StreamWriter sw = new StreamWriter(_html, false, Encoding.Default))
+                {
+                    sw.WriteLine(sb);
+                }
+                
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error: " + e.Message);
+            }
+            ConvertHtmlToPdf();
+        }
+
+        private void ConvertHtmlToPdf()
+        {
+            object readOnly = true;
+            object isVisible = true;
+            object missing = System.Reflection.Missing.Value;
+            object fileName = Directory.GetCurrentDirectory() + "\\" + _html;
+            Word.Application ap = new Word.Application();
+            //открывем файл на ms word
+            Word.Document document = ap.Documents.Open(ref fileName, ref missing, 
+                ref readOnly, ref missing, ref missing,
+                ref missing, ref missing, ref missing,
+                ref missing, ref missing, ref missing,
+                ref missing, ref missing, ref missing,
+                ref missing, ref missing);
+            //сохраняем файл в формате pdf
+            document.ExportAsFixedFormat(Directory.GetCurrentDirectory() + "\\" + _pdf,
+                Word.WdExportFormat.wdExportFormatPDF);
+            //закрываем ms word
+            document.Close();
+            if (File.Exists(_html))
+            {
+                File.Delete(_html);
             }
         }
     }
