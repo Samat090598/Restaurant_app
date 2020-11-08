@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using Insight.Database;
 using Word = Microsoft.Office.Interop.Word;
@@ -10,14 +11,8 @@ namespace Restaurant_app
 {
     public class FileManager
     {
-        private readonly SqlConnection _connection;
         private const string _html = "Index.html";
         private const string _pdf = "Index.PDF";
-
-        public FileManager(SqlConnection connection)
-        {
-            _connection = connection;
-        }
 
         public void CreateHtmlFile()
         {
@@ -25,16 +20,25 @@ namespace Restaurant_app
             dt.Columns.AddRange(new DataColumn[3] { new DataColumn("Id", typeof(int)),
                 new DataColumn("Size", typeof(string)),
                 new DataColumn("FreeSize",typeof(string)) });
+
+            var datasource = @"HOME-PC\SQLEXPRESS";
+            var database = "Restaurant";
+
+             
+            string connString = @"Data Source=" + datasource + ";Initial Catalog="
+                                + database + ";Integrated Security=True;";
+            
+            SqlConnection connection = new SqlConnection(connString);
             try
             { 
                 //открываем соединение
-                _connection.Open();
-                foreach (var table in _connection.Query<Table>("GetTables"))
+                connection.Open();
+                foreach (var table in connection.Query<Table>("GetTables"))
                 {
                     dt.Rows.Add(table.Id, table.Size, table.FreeSize);
                 }
                 //закрываем соединение
-                _connection.Close();
+                connection.Close();
 
                 StringBuilder sb = new StringBuilder();
                 
@@ -78,7 +82,10 @@ namespace Restaurant_app
             object isVisible = true;
             object missing = System.Reflection.Missing.Value;
             object fileName = Directory.GetCurrentDirectory() + "\\" + _html;
+            
+            //Открываем приложение
             Word.Application ap = new Word.Application();
+            
             //открывем файл на ms word
             Word.Document document = ap.Documents.Open(ref fileName, ref missing, 
                 ref readOnly, ref missing, ref missing,
@@ -86,12 +93,20 @@ namespace Restaurant_app
                 ref missing, ref missing, ref missing,
                 ref missing, ref missing, ref missing,
                 ref missing, ref missing);
-            //сохраняем файл в формате pdf
-            document.ExportAsFixedFormat(Directory.GetCurrentDirectory() + "\\" + _pdf,
+            
+            // сохраняем файл в формате pdf
+            document.SaveAs(Directory.GetCurrentDirectory() + "\\" + _pdf, 
                 Word.WdExportFormat.wdExportFormatPDF);
-            //закрываем ms word
-            document.Close();
-            if (File.Exists(_html))
+
+            // закрываем ms word
+             document.Close(false);
+             document = null;
+             ap.Quit(false);
+             Marshal.ReleaseComObject(ap);
+             ap = null;
+
+             // 
+             if (File.Exists(_html))
             {
                 File.Delete(_html);
             }

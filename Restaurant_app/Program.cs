@@ -1,5 +1,8 @@
-﻿using System.Data.SqlClient;
+﻿using System;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
+using Quartz;
+using Quartz.Impl;
 
 namespace Restaurant_app
 {
@@ -7,20 +10,22 @@ namespace Restaurant_app
     {
         public static async Task Main(string[] args)
         {
-            var datasource = @"HOME-PC\SQLEXPRESS";
-            var database = "Restaurant";
+            IScheduler scheduler = await StdSchedulerFactory.GetDefaultScheduler();
+            await scheduler.Start();
 
-             
-            string connString = @"Data Source=" + datasource + ";Initial Catalog="
-                                + database + ";Integrated Security=True;";
-
-            SqlConnection conn = new SqlConnection(connString);
-
-            //Инициализируем FileManager
-            FileManager fileManager = new FileManager(conn);
-            fileManager.CreateHtmlFile();
+            IJobDetail job = JobBuilder.Create<MyJob>()
+                .WithIdentity("job1", "group1")
+                .Build();
             
-            await EmailService.SendEmailAsync();
+            ITrigger trigger = TriggerBuilder.Create()
+                .WithIdentity("trigger1", "group1")
+                .WithSimpleSchedule(x => x.WithIntervalInMinutes(2).RepeatForever())
+                .Build();
+ 
+            await scheduler.ScheduleJob(job, trigger);
+
+            Console.WriteLine("Нажмите любую кнопку чтобы прекратить работу");
+            Console.ReadKey();
         }
     }
 }
