@@ -105,7 +105,7 @@ namespace Restaurant_app
              Marshal.ReleaseComObject(ap);
              ap = null;
 
-             // 
+             // Удалил html файл
              if (File.Exists(_html))
             {
                 File.Delete(_html);
