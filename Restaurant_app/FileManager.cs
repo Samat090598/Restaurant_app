@@ -12,8 +12,8 @@ namespace Restaurant_app
 {
     public class FileManager
     {
-        private const string _html = "Index.html";
-        private const string _pdf = "Index.PDF";
+        private static readonly string _html = System.Configuration.ConfigurationManager.AppSettings["html"];
+        private static readonly string _pdf = System.Configuration.ConfigurationManager.AppSettings["pdf"];
 
         public async Task CreateHtmlFile()
         {
@@ -79,31 +79,39 @@ namespace Restaurant_app
             object readOnly = true;
             object isVisible = true;
             object missing = System.Reflection.Missing.Value;
-            object fileName = Directory.GetCurrentDirectory() + "\\" + _html;
+            object fileName = Path.GetFullPath(_html);
             
             //Открываем приложение
             Word.Application ap = new Word.Application();
-
-            //открывем файл на ms word
-            Word.Document document = ap.Documents.Open(ref fileName, ref missing, 
-                ref readOnly, ref missing, ref missing,
-                ref missing, ref missing, ref missing,
-                ref missing, ref missing, ref missing,
-                ref missing, ref missing, ref missing,
-                ref missing, ref missing);
-            
-            // сохраняем файл в формате pdf
-            document.SaveAs(Directory.GetCurrentDirectory() + "\\" + _pdf, 
-                Word.WdExportFormat.wdExportFormatPDF);
-
-            // закрываем ms word
-             document.Close(false);
-             document = null;
-             ap.Quit(false);
-             Marshal.ReleaseComObject(ap);
-             ap = null;
-
-             // Удалил html файл
+            try
+            {    
+                //открывем файл на ms word
+                Word.Document document = ap.Documents.Open(ref fileName, ref missing,
+                    ref readOnly, ref missing, ref missing,
+                    ref missing, ref missing, ref missing,
+                    ref missing, ref missing, ref missing,
+                    ref missing, ref missing, ref missing,
+                    ref missing, ref missing);
+                try
+                {
+                    // сохраняем файл в формате pdf
+                    document.SaveAs(Path.GetFullPath(_pdf),
+                        Word.WdExportFormat.wdExportFormatPDF);
+                }
+                finally
+                {
+                    // закрываем ms word
+                    document.Close(false);
+                    document = null;       
+                }
+            }
+            finally
+            {
+                ap.Quit(false);
+                Marshal.ReleaseComObject(ap);
+                ap = null;   
+            }
+            // Удалил html файл
              if (File.Exists(_html))
             {
                 File.Delete(_html);
