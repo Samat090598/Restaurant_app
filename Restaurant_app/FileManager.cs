@@ -27,51 +27,48 @@ namespace Restaurant_app
              
             string connString = @"Data Source=" + datasource + ";Initial Catalog="
                                 + database + ";Integrated Security=True;";
-            
-            SqlConnection connection = new SqlConnection(connString);
-            try
-            { 
-                //открываем соединение
-                connection.Open();
-                foreach (var table in connection.Query<Table>("GetTables"))
-                {
-                    dt.Rows.Add(table.Id, table.Size, table.FreeSize);
-                }
-                //закрываем соединение
-                connection.Close();
 
-                StringBuilder sb = new StringBuilder();
-                
-                sb.Append("<table cellpadding='5' cellspacing='0' style='border: 1px solid #ccc;font-size: 9pt;font-family:Arial;" +
-                          "text-align:center; margin: 50px auto 0 auto'>");
-                
-                sb.Append("<tr>");
-                foreach (DataColumn column in dt.Columns)
+            using (SqlConnection connection = new SqlConnection(connString))
+            {
+                try
                 {
-                    sb.Append("<th style='background-color: #B8DBFD;border: 1px solid #ccc'>" + column.ColumnName + "</th>");
-                }
-                sb.Append("</tr>");
+                    connection.Open();   
+                    foreach (var table in connection.Query<Table>("GetTables"))
+                    {
+                        dt.Rows.Add(table.Id, table.Size, table.FreeSize);
+                    }
+                    StringBuilder sb = new StringBuilder();
                 
-                foreach (DataRow row in dt.Rows)
-                {
+                    sb.Append("<table cellpadding='5' cellspacing='0' style='border: 1px solid #ccc;font-size: 9pt;font-family:Arial;" +
+                              "text-align:center; margin: 50px auto 0 auto'>");
+                
                     sb.Append("<tr>");
                     foreach (DataColumn column in dt.Columns)
                     {
-                        sb.Append("<td style='width:100px;border: 1px solid #ccc'>" + row[column.ColumnName].ToString() + "</td>");
+                        sb.Append("<th style='background-color: #B8DBFD;border: 1px solid #ccc'>" + column.ColumnName + "</th>");
                     }
                     sb.Append("</tr>");
-                }
                 
-                sb.Append("</table>");
-                using (StreamWriter sw = new StreamWriter(_html, false, Encoding.Default))
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        sb.Append("<tr>");
+                        foreach (DataColumn column in dt.Columns)
+                        {
+                            sb.Append("<td style='width:100px;border: 1px solid #ccc'>" + row[column.ColumnName].ToString() + "</td>");
+                        }
+                        sb.Append("</tr>");
+                    }
+                
+                    sb.Append("</table>");
+                    using (StreamWriter sw = new StreamWriter(_html, false, Encoding.Default))
+                    {
+                        sw.WriteLine(sb);
+                    }
+                }
+                catch (Exception e)
                 {
-                    sw.WriteLine(sb);
+                    Console.WriteLine("Error: " + e.Message);
                 }
-                
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error: " + e.Message);
             }
             ConvertHtmlToPdf();
         }
@@ -85,7 +82,7 @@ namespace Restaurant_app
             
             //Открываем приложение
             Word.Application ap = new Word.Application();
-            
+
             //открывем файл на ms word
             Word.Document document = ap.Documents.Open(ref fileName, ref missing, 
                 ref readOnly, ref missing, ref missing,
