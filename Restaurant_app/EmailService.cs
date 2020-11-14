@@ -8,18 +8,16 @@ namespace Restaurant_app
 {
     public class EmailService
     {
-        private const string _pdf = "Index.PDF";
-
-        public static async Task SendEmailAsync()
+        public static async Task SendEmailAsync(string pdf)
         {
-            if (File.Exists(_pdf))
+            if (File.Exists(pdf))
             {
                 MailAddress from = new MailAddress("example2008@inbox.ru", "Example");
                 //Здесь вводит почту на которую нужно отправить сообщение
                 MailAddress to = new MailAddress("muratsamat090598@gmail.com");
                 using (MailMessage message = new MailMessage(from, to))
                 {
-                    message.Attachments.Add(new Attachment(Directory.GetCurrentDirectory() + "\\" + _pdf));
+                    message.Attachments.Add(new Attachment(Directory.GetCurrentDirectory() + "\\" + pdf));
                     SmtpClient smtp = new SmtpClient
                     {
                         Host = "smtp.mail.ru",
@@ -34,9 +32,9 @@ namespace Restaurant_app
                     Console.WriteLine("Письмо отправлено");    
                 }
                 // Удалил Pdf Файл
-                if (File.Exists(_pdf))
+                if (File.Exists(pdf))
                 {
-                    File.Delete(_pdf);
+                    File.Delete(pdf);
                 }
             }
         }

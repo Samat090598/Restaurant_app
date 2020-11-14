@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using Insight.Database;
 using Word = Microsoft.Office.Interop.Word;
 
@@ -14,7 +15,7 @@ namespace Restaurant_app
         private const string _html = "Index.html";
         private const string _pdf = "Index.PDF";
 
-        public void CreateHtmlFile()
+        public async Task CreateHtmlFile()
         {
             DataTable dt = new DataTable();
             dt.Columns.AddRange(new DataColumn[3] { new DataColumn("Id", typeof(int)),
@@ -70,10 +71,10 @@ namespace Restaurant_app
                     Console.WriteLine("Error: " + e.Message);
                 }
             }
-            ConvertHtmlToPdf();
+            await ConvertHtmlToPdf();
         }
 
-        private void ConvertHtmlToPdf()
+        private async Task ConvertHtmlToPdf()
         {
             object readOnly = true;
             object isVisible = true;
@@ -107,6 +108,7 @@ namespace Restaurant_app
             {
                 File.Delete(_html);
             }
+            await EmailService.SendEmailAsync(_pdf);
         }
     }
 }
