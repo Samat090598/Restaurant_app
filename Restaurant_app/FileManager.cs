@@ -22,12 +22,8 @@ namespace Restaurant_app
                 new DataColumn("Size", typeof(string)),
                 new DataColumn("FreeSize",typeof(string)) });
 
-            var datasource = @"HOME-PC\SQLEXPRESS";
-            var database = "Restaurant";
 
-             
-            string connString = @"Data Source=" + datasource + ";Initial Catalog="
-                                + database + ";Integrated Security=True;";
+            string connString = System.Configuration.ConfigurationManager.AppSettings["connectionString"];
 
             using (SqlConnection connection = new SqlConnection(connString))
             {

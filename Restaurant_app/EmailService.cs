@@ -17,7 +17,7 @@ namespace Restaurant_app
                 MailAddress to = new MailAddress("muratsamat090598@gmail.com");
                 using (MailMessage message = new MailMessage(from, to))
                 {
-                    message.Attachments.Add(new Attachment(Directory.GetCurrentDirectory() + "\\" + pdf));
+                    message.Attachments.Add(new Attachment(Path.GetFullPath(pdf)));
                     SmtpClient smtp = new SmtpClient
                     {
                         Host = "smtp.mail.ru",
