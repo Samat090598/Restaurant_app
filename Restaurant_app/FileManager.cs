@@ -15,7 +15,7 @@ namespace Restaurant_app
         private static readonly string _html = System.Configuration.ConfigurationManager.AppSettings["html"];
         private static readonly string _pdf = System.Configuration.ConfigurationManager.AppSettings["pdf"];
 
-        public async Task CreateHtmlFile()
+        public void CreateHtmlFile()
         {
             DataTable dt = new DataTable();
             dt.Columns.AddRange(new DataColumn[3] { new DataColumn("Id", typeof(int)),
@@ -67,10 +67,9 @@ namespace Restaurant_app
                     Console.WriteLine("Error: " + e.Message);
                 }
             }
-            await ConvertHtmlToPdf();
         }
 
-        private async Task ConvertHtmlToPdf()
+        public string ConvertHtmlToPdf()
         {
             object readOnly = true;
             object isVisible = true;
@@ -112,7 +111,7 @@ namespace Restaurant_app
             {
                 File.Delete(_html);
             }
-            await EmailService.SendEmailAsync(_pdf);
+            return Path.GetFullPath(_pdf);
         }
     }
 }

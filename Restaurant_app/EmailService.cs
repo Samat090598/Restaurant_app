@@ -12,12 +12,13 @@ namespace Restaurant_app
         {
             if (File.Exists(pdf))
             {
-                MailAddress from = new MailAddress("example2008@inbox.ru", "Example");
+                MailAddress from = new MailAddress(System.Configuration.ConfigurationManager.AppSettings["mailAddress"],
+                    System.Configuration.ConfigurationManager.AppSettings["displayName"]);
                 //Здесь вводит почту на которую нужно отправить сообщение
                 MailAddress to = new MailAddress("muratsamat090598@gmail.com");
                 using (MailMessage message = new MailMessage(from, to))
                 {
-                    message.Attachments.Add(new Attachment(Path.GetFullPath(pdf)));
+                    message.Attachments.Add(new Attachment(pdf));
                     SmtpClient smtp = new SmtpClient
                     {
                         Host = "smtp.mail.ru",
@@ -25,7 +26,8 @@ namespace Restaurant_app
                         DeliveryMethod = SmtpDeliveryMethod.Network,
                         UseDefaultCredentials = false,
                         EnableSsl = true,
-                        Credentials = new NetworkCredential(from.Address, "Dj#d_9A-bqBmg_R"),
+                        Credentials = new NetworkCredential(from.Address, 
+                            System.Configuration.ConfigurationManager.AppSettings["mailPassword"]),
                         Timeout = 20000,
                     };
                     await smtp.SendMailAsync(message);

@@ -8,7 +8,9 @@ namespace Restaurant_app
         public async Task Execute(IJobExecutionContext context)
         {
             FileManager fileManager = new FileManager();
-            await fileManager.CreateHtmlFile();
+            fileManager.CreateHtmlFile();
+            string pdf = fileManager.ConvertHtmlToPdf();
+            await EmailService.SendEmailAsync(pdf);
         }
     }
 }
